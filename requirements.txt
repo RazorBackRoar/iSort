@@ -1,0 +1,8 @@
+# Python Dependencies
+PySide6>=6.6.0
+pyinstaller>=6.3.0
+
+# System Dependencies (must be installed separately):
+# - exiftool: brew install exiftool (macOS) or apt-get install libimage-exiftool-perl (Linux)
+# - mediainfo: brew install mediainfo (macOS) or apt-get install mediainfo (Linux)
+# - mdls: Built-in on macOS only
