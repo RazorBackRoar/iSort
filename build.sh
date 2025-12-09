@@ -68,6 +68,10 @@ if [ -f "$DMG_SOURCE" ]; then
     echo "📦 Moving DMG to dist..."
     mv "$DMG_SOURCE" "$DMG_DEST"
     echo "✅ DMG available at: $DMG_DEST"
+
+    # Clean up the App bundle as user requested only DMG to remain
+    echo "🧹 Removing App bundle from dist..."
+    rm -rf "$BUILD_DIR/${APP_NAME}.app"
 else
     echo "❌ DMG creation failed or file not found at $DMG_SOURCE"
     exit 1
