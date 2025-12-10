@@ -55,7 +55,7 @@
 3. Run the application:
 
    ```bash
-   python3 main.py
+   python3 src/main.py
    ```
 
 ## 🛠️ Build Instructions

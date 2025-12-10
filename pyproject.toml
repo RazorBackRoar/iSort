@@ -32,8 +32,11 @@ Homepage = "https://github.com/RazorBackRoar/isort"
 Repository = "https://github.com/RazorBackRoar/isort"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["core*", "ui*", "utils*"]
+where = ["src"]
+include = ["*"]
+
+[project.scripts]
+isort = "main:main"
 
 [tool.pyright]
 include = ["."]

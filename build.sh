@@ -19,6 +19,13 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+# Check for required external tools (optional features)
+for tool in exiftool mdls mediainfo; do
+    if ! command -v "$tool" &> /dev/null; then
+        echo "⚠️  Warning: $tool not found. Some features may not work."
+    fi
+done
+
 # Install dependencies (use the same python as PyInstaller)
 echo "📦 Installing/Updating dependencies..."
 python3 -m pip install -r requirements.txt
@@ -59,8 +66,14 @@ fi
 
 # Build DMG
 echo "💿 Building DMG..."
-# Auto-confirm DMG open prompt
-printf "y\n" | ./build/scripts/build-dmg.sh
+DMG_SCRIPT="./build/scripts/build-dmg.sh"
+if [ -x "$DMG_SCRIPT" ]; then
+    # Auto-confirm DMG open prompt
+    printf "y\n" | "$DMG_SCRIPT"
+else
+    echo "⚠️  DMG script not found or not executable at $DMG_SCRIPT. Skipping DMG build."
+    exit 1
+fi
 
 # Move and rename DMG
 DMG_SOURCE="${APP_NAME}-1.0.0.dmg"

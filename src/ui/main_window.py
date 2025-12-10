@@ -214,6 +214,9 @@ class StatCard(QFrame):
         )
         self._value_anim.start()
 
+    def value(self) -> int:
+        return self._current_value
+
     def set_value(self, value: int):
         old = self._current_value
         self._current_value = value
@@ -614,6 +617,17 @@ class MainWindow(QMainWindow):
         stats_grid.addWidget(self.card_non_apple, 1, 1)
         stats_grid.addWidget(self.card_errors, 1, 2)
 
+        for card in [
+            self.card_files_moved,
+            self.card_iphone_photos,
+            self.card_iphone_videos,
+            self.card_screenshots,
+            self.card_snapchat,
+            self.card_non_apple,
+            self.card_errors,
+        ]:
+            card.clicked.connect(self._on_card_clicked)
+
         main_layout.addLayout(stats_grid)
 
         # === Tabbed View ===
@@ -843,6 +857,26 @@ class MainWindow(QMainWindow):
         self.card_snapchat.set_value(stats.get("snapchat", 0))
         self.card_non_apple.set_value(stats.get("non_apple", 0))
         self.card_errors.set_value(stats.get("errors", 0))
+
+    @Slot(str)
+    def _on_card_clicked(self, category: str) -> None:
+        """Handle stat card clicks by surfacing relevant details."""
+        if category == "errors":
+            self.tab_widget.setCurrentWidget(self.log_viewer)
+            self.status_label.setText("Showing errors in Log")
+            return
+
+        count_lookup = {
+            "files_moved": self.card_files_moved.value(),
+            "iphone_photos": self.card_iphone_photos.value(),
+            "iphone_videos": self.card_iphone_videos.value(),
+            "screenshots": self.card_screenshots.value(),
+            "snapchat": self.card_snapchat.value(),
+            "non_apple": self.card_non_apple.value(),
+            "errors": self.card_errors.value(),
+        }
+        dialog = StatsDetailDialog(category, count_lookup.get(category, 0), self)
+        dialog.exec()
 
     @Slot()
     def _start_processing(self) -> None:
