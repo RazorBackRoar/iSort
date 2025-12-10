@@ -4,6 +4,7 @@ Entry point for the PySide6 GUI application.
 """
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -56,6 +57,18 @@ def main() -> int:
     # Optional dependency warning for external tools
     try:
         from core.metadata import check_dependencies
+
+        # Ensure Homebrew paths are visible when launched from Finder
+        hb_paths = ["/opt/homebrew/bin", "/usr/local/bin"]
+        existing_path = os.environ.get("PATH", "")
+        expanded_path = os.pathsep.join(
+            list(
+                dict.fromkeys(
+                    hb_paths + [p for p in existing_path.split(os.pathsep) if p]
+                )
+            )
+        )
+        os.environ["PATH"] = expanded_path
 
         missing = check_dependencies()
         if missing:
