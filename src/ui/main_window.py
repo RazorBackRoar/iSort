@@ -30,7 +30,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core.metadata import check_dependencies
 from core.organizer import check_disk_space, MIN_DISK_SPACE_MB
 from core.worker import OrganizeWorker
 from utils.checkpoint import CheckpointManager
@@ -162,21 +161,6 @@ class MainWindow(QMainWindow):
 
         self._setup_ui()
         self._connect_signals()
-        self._check_external_tools()
-
-    def _check_external_tools(self) -> None:
-        """Check for missing external tools and warn user."""
-        missing = check_dependencies()
-        if missing:
-            QMessageBox.warning(
-                self,
-                "Missing Dependencies",
-                f"The following external tools are missing:\n\n"
-                f"{', '.join(missing)}\n\n"
-                "Metadata extraction quality may be degraded.\n"
-                "Please install them via Homebrew:\n"
-                "brew install exiftool mdls mediainfo",
-            )
 
     def _setup_ui(self) -> None:
         """Set up the main UI layout matching the mockups."""
