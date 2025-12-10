@@ -5,14 +5,25 @@ Main application window for iSort - matches the design mockups exactly.
 
 import os
 from pathlib import Path
+from typing import Dict, List, Optional
 
-from PySide6.QtCore import Qt, Slot, QThread, Signal
+from PySide6.QtCore import (
+    Qt,
+    Slot,
+    QThread,
+    Signal,
+    QEasingCurve,
+    QVariantAnimation,
+    QPropertyAnimation,
+    QAbstractAnimation,
+)
 from PySide6.QtGui import QAction, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
     QFrame,
+    QGraphicsDropShadowEffect,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -37,44 +48,72 @@ from utils.error_log import ErrorLogger
 from utils.manifest import ManifestUndoer, ManifestInfo, UndoResult
 from .log_viewer import LogViewer
 from .stats_widget import StatsWidget
+from .stats_detail_dialog import StatsDetailDialog
 
 
 class StatCard(QFrame):
-    """A stat card widget with colored left border, value, label, and icon."""
+    """A stat card widget with interactive styling and hover/click animations."""
 
-    def __init__(self, label: str, icon: str, border_color: str, parent=None):
+    clicked = Signal(str)  # category key
+
+    def __init__(
+        self,
+        key: str,
+        label: str,
+        icon: str,
+        border_color: str,
+        tooltip: str,
+        parent=None,
+    ):
         super().__init__(parent)
+        self.key = key
         self.border_color = border_color
         self.value_label = QLabel("0")
         self.text_label = QLabel(label)
         self.icon_label = QLabel(icon)
+        self._current_value = 0
+        self._hover_anim: Optional[QPropertyAnimation] = None
+        self._value_anim: Optional[QVariantAnimation] = None
 
         self._setup_ui()
+        self.setToolTip(tooltip)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._apply_shadow()
+
+    def _apply_shadow(self) -> None:
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(24)
+        shadow.setColor(Qt.GlobalColor.black)
+        shadow.setOffset(0, 6)
+        self.setGraphicsEffect(shadow)
 
     def _setup_ui(self):
         self.setStyleSheet(
             f"""
             StatCard {{
-                background-color: #2d2d2d;
+                background-color: #2a2a2a;
                 border-radius: 12px;
-                border-left: 4px solid {self.border_color};
+                border-left: 5px solid {self.border_color};
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display";
             }}
         """
         )
-        self.setFixedHeight(90)
-        self.setMinimumWidth(140)
+        self.setFixedHeight(100)
+        self.setMinimumWidth(180)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(12)
 
         # Left side: value and label
         left_layout = QVBoxLayout()
-        left_layout.setSpacing(4)
+        left_layout.setSpacing(8)
 
         self.value_label.setStyleSheet(
             """
             QLabel {
-                font-size: 32px;
+                font-size: 36px;
                 font-weight: bold;
                 color: #ffffff;
             }
@@ -84,8 +123,9 @@ class StatCard(QFrame):
         self.text_label.setStyleSheet(
             """
             QLabel {
-                font-size: 13px;
-                color: #888888;
+                font-size: 14px;
+                color: #a0a0a0;
+                font-weight: 500;
             }
         """
         )
@@ -97,18 +137,107 @@ class StatCard(QFrame):
         self.icon_label.setStyleSheet(
             f"""
             QLabel {{
-                font-size: 24px;
+                font-size: 28px;
                 color: {self.border_color};
             }}
         """
         )
-        self.icon_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.icon_label.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
 
         layout.addLayout(left_layout, 1)
         layout.addWidget(self.icon_label)
 
+    def enterEvent(self, event):
+        self._animate_hover(entering=True)
+        return super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._animate_hover(entering=False)
+        return super().leaveEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._animate_click()
+            self.clicked.emit(self.key)
+        return super().mousePressEvent(event)
+
+    def _animate_hover(self, entering: bool) -> None:
+        target = 1.02 if entering else 1.0
+        if (
+            self._hover_anim
+            and self._hover_anim.state() == QAbstractAnimation.State.Running
+        ):
+            self._hover_anim.stop()
+        self._hover_anim = QPropertyAnimation(self, b"maximumHeight")
+        self._hover_anim.setDuration(150)
+        self._hover_anim.setStartValue(self.height())
+        self._hover_anim.setEndValue(int(100 * target))
+        self._hover_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        self._hover_anim.start()
+        # Background lift
+        bg = "#323232" if entering else "#2a2a2a"
+        self.setStyleSheet(
+            f"""
+            StatCard {{
+                background-color: {bg};
+                border-radius: 12px;
+                border-left: 5px solid {self.border_color};
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display";
+            }}
+        """
+        )
+
+    def _animate_click(self) -> None:
+        anim = QPropertyAnimation(self, b"maximumHeight")
+        anim.setDuration(100)
+        anim.setKeyValueAt(0, self.height())
+        anim.setKeyValueAt(0.5, int(100 * 0.98))
+        anim.setKeyValueAt(1, self.height())
+        anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        anim.start(QAbstractAnimation.DeletionPolicy.DeleteWhenStopped)
+
+    def _animate_value_change(self, old: int, new: int) -> None:
+        if (
+            self._value_anim
+            and self._value_anim.state() == QAbstractAnimation.State.Running
+        ):
+            self._value_anim.stop()
+        self._value_anim = QVariantAnimation(self)
+        self._value_anim.setStartValue(old)
+        self._value_anim.setEndValue(new)
+        self._value_anim.setDuration(200)
+        self._value_anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        self._value_anim.valueChanged.connect(
+            lambda v: self.value_label.setText(str(int(v)))
+        )
+        self._value_anim.start()
+
     def set_value(self, value: int):
-        self.value_label.setText(str(value))
+        old = self._current_value
+        self._current_value = value
+        if value == 0:
+            self.setWindowOpacity(0.8)
+            self.icon_label.setStyleSheet(
+                f"""
+                QLabel {{
+                    font-size: 28px;
+                    color: {self.border_color}AA;
+                }}
+            """
+            )
+        else:
+            self.setWindowOpacity(1.0)
+            self.icon_label.setStyleSheet(
+                f"""
+                QLabel {{
+                    font-size: 28px;
+                    color: {self.border_color};
+                }}
+            """
+            )
+        self._animate_value_change(old, value)
 
 
 class UndoWorker(QThread):
@@ -195,13 +324,13 @@ class MainWindow(QMainWindow):
 
         # Version info
         version_layout = QVBoxLayout()
-        version_layout.setAlignment(Qt.AlignRight)
+        version_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         version_label = QLabel("v10.0")
         version_label.setStyleSheet("font-size: 14px; color: #888888;")
         engine_label = QLabel("Confidence Scoring Engine")
         engine_label.setStyleSheet("font-size: 12px; color: #666666;")
-        version_layout.addWidget(version_label, alignment=Qt.AlignRight)
-        version_layout.addWidget(engine_label, alignment=Qt.AlignRight)
+        version_layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignRight)
+        version_layout.addWidget(engine_label, alignment=Qt.AlignmentFlag.AlignRight)
 
         header_layout.addLayout(title_layout)
         header_layout.addLayout(version_layout)
@@ -421,13 +550,37 @@ class MainWindow(QMainWindow):
 
         # === Stats Cards Grid ===
         stats_grid = QGridLayout()
-        stats_grid.setSpacing(12)
+        stats_grid.setSpacing(16)
 
         # Row 1: Files Moved, iPhone Photos, iPhone Videos, Screenshots
-        self.card_files_moved = StatCard("Files Moved", "✓", "#4a9eff")
-        self.card_iphone_photos = StatCard("iPhone Photos", "💻", "#22c55e")
-        self.card_iphone_videos = StatCard("iPhone Videos", "💻", "#06b6d4")
-        self.card_screenshots = StatCard("Screenshots", "🖼", "#f59e0b")
+        self.card_files_moved = StatCard(
+            "files_moved",
+            "Files Moved",
+            "✓",
+            "#4a9eff",
+            "Total files successfully organized",
+        )
+        self.card_iphone_photos = StatCard(
+            "iphone_photos",
+            "iPhone Photos",
+            "📷",
+            "#22c55e",
+            "Photos detected from iPhone/iPad",
+        )
+        self.card_iphone_videos = StatCard(
+            "iphone_videos",
+            "iPhone Videos",
+            "🎥",
+            "#06b6d4",
+            "Videos detected from iPhone/iPad",
+        )
+        self.card_screenshots = StatCard(
+            "screenshots",
+            "Screenshots",
+            "🖼️",
+            "#f59e0b",
+            "Screenshot files identified",
+        )
 
         stats_grid.addWidget(self.card_files_moved, 0, 0)
         stats_grid.addWidget(self.card_iphone_photos, 0, 1)
@@ -435,9 +588,27 @@ class MainWindow(QMainWindow):
         stats_grid.addWidget(self.card_screenshots, 0, 3)
 
         # Row 2: Snapchat, Non-Apple, Errors
-        self.card_snapchat = StatCard("Snapchat", "👻", "#eab308")
-        self.card_non_apple = StatCard("Non-Apple", "📄", "#ec4899")
-        self.card_errors = StatCard("Errors", "⚠", "#ef4444")
+        self.card_snapchat = StatCard(
+            "snapchat",
+            "Snapchat",
+            "👻",
+            "#eab308",
+            "Snapchat media files",
+        )
+        self.card_non_apple = StatCard(
+            "non_apple",
+            "Non-Apple",
+            "📄",
+            "#ec4899",
+            "Files from non-Apple devices",
+        )
+        self.card_errors = StatCard(
+            "errors",
+            "Errors",
+            "⚠️",
+            "#ef4444",
+            "Click to view error details",
+        )
 
         stats_grid.addWidget(self.card_snapchat, 1, 0)
         stats_grid.addWidget(self.card_non_apple, 1, 1)
