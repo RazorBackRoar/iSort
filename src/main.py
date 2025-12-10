@@ -5,8 +5,9 @@ Entry point for the PySide6 GUI application.
 
 import sys
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow
+from PySide6.QtWidgets import QApplication
 
 
 def setup_dark_theme(app: QApplication) -> None:
@@ -24,6 +25,12 @@ def setup_dark_theme(app: QApplication) -> None:
 
 def main() -> int:
     """Initialize and run the application."""
+    QApplication.setApplicationName("iSort")
+    QApplication.setOrganizationName("iSort")
+    QApplication.setOrganizationDomain("com.isort.app")
+    QApplication.setApplicationDisplayName("iSort - Apple Device File Organizer")
+    if hasattr(Qt, "AA_DontShowIconsInMenus"):
+        QApplication.setAttribute(Qt.AA_DontShowIconsInMenus, False)
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     setup_dark_theme(app)

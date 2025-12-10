@@ -130,10 +130,18 @@ class MetadataExtractor:
         """
         Check if an external tool is available.
 
-        Uses shutil.which() for PATH-based detection to avoid issues with
-        tools like mdls that don't support --version flag.
+        Uses shutil.which() and common Homebrew prefixes since macOS app
+        bundles often have a restricted PATH.
         """
-        return shutil.which(name) is not None
+        if shutil.which(name):
+            return True
+
+        # Fallbacks for users with Homebrew-installed binaries not on PATH
+        common_paths = (
+            f"/opt/homebrew/bin/{name}",
+            f"/usr/local/bin/{name}",
+        )
+        return any(os.access(path, os.X_OK) for path in common_paths)
 
     def _run_cmd(self, cmd: List[str], timeout: int = 10) -> str:
         """Run a command and return lowercase output."""
