@@ -91,31 +91,33 @@ class StatCard(QFrame):
         self.setStyleSheet(
             f"""
             StatCard {{
-                background-color: #2a2a2a;
-                border-radius: 12px;
-                border-left: 5px solid {self.border_color};
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #26262c, stop:1 #1f1f24);
+                border-radius: 14px;
+                border: 1px solid #32323a;
+                padding: 0px;
                 font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display";
             }}
         """
         )
-        self.setFixedHeight(100)
-        self.setMinimumWidth(180)
+        self.setFixedHeight(110)
+        self.setMinimumWidth(200)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(14)
 
         # Left side: value and label
         left_layout = QVBoxLayout()
-        left_layout.setSpacing(8)
+        left_layout.setSpacing(6)
 
         self.value_label.setStyleSheet(
             """
             QLabel {
-                font-size: 36px;
-                font-weight: bold;
-                color: #ffffff;
+                font-size: 34px;
+                font-weight: 800;
+                color: #f7f7f7;
             }
         """
         )
@@ -123,9 +125,9 @@ class StatCard(QFrame):
         self.text_label.setStyleSheet(
             """
             QLabel {
-                font-size: 14px;
-                color: #a0a0a0;
-                font-weight: 500;
+                font-size: 13px;
+                color: #b8b8c7;
+                font-weight: 600;
             }
         """
         )
@@ -137,7 +139,7 @@ class StatCard(QFrame):
         self.icon_label.setStyleSheet(
             f"""
             QLabel {{
-                font-size: 28px;
+                font-size: 26px;
                 color: {self.border_color};
             }}
         """
@@ -298,7 +300,14 @@ class MainWindow(QMainWindow):
         """Set up the main UI layout matching the mockups."""
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        central_widget.setStyleSheet("background-color: #1a1a1a;")
+        central_widget.setStyleSheet(
+            """
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #0f1014, stop:1 #0b0c10);
+            }
+        """
+        )
 
         main_layout = QVBoxLayout(central_widget)
         main_layout.setSpacing(24)
@@ -344,8 +353,9 @@ class MainWindow(QMainWindow):
         source_frame.setStyleSheet(
             """
             QFrame {
-                background-color: #2d2d2d;
+                background: #1f2025;
                 border-radius: 12px;
+                border: 1px solid #2f3038;
             }
         """
         )
@@ -402,8 +412,9 @@ class MainWindow(QMainWindow):
         options_frame.setStyleSheet(
             """
             QFrame {
-                background-color: #2d2d2d;
+                background: #1f2025;
                 border-radius: 12px;
+                border: 1px solid #2f3038;
             }
         """
         )
@@ -506,8 +517,9 @@ class MainWindow(QMainWindow):
         progress_frame.setStyleSheet(
             """
             QFrame {
-                background-color: #2d2d2d;
+                background: #1f2025;
                 border-radius: 12px;
+                border: 1px solid #2f3038;
             }
         """
         )
@@ -616,6 +628,9 @@ class MainWindow(QMainWindow):
         stats_grid.addWidget(self.card_snapchat, 1, 0)
         stats_grid.addWidget(self.card_non_apple, 1, 1)
         stats_grid.addWidget(self.card_errors, 1, 2)
+
+        for i in range(4):
+            stats_grid.setColumnStretch(i, 1)
 
         for card in [
             self.card_files_moved,

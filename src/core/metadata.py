@@ -133,15 +133,7 @@ class MetadataExtractor:
         Uses shutil.which() and common Homebrew prefixes since macOS app
         bundles often have a restricted PATH.
         """
-        if shutil.which(name):
-            return True
-
-        # Fallbacks for users with Homebrew-installed binaries not on PATH
-        common_paths = (
-            f"/opt/homebrew/bin/{name}",
-            f"/usr/local/bin/{name}",
-        )
-        return any(os.access(path, os.X_OK) for path in common_paths)
+        return _is_tool_available(name)
 
     def _run_cmd(self, cmd: List[str], timeout: int = 10) -> str:
         """Run a command and return lowercase output."""
@@ -545,10 +537,23 @@ def check_dependencies() -> List[str]:
         List of missing tool names.
     """
     missing = []
-    if shutil.which("exiftool") is None:
+    if not _is_tool_available("exiftool"):
         missing.append("exiftool")
-    if shutil.which("mdls") is None:
+    if not _is_tool_available("mdls"):
         missing.append("mdls")
-    if shutil.which("mediainfo") is None:
+    if not _is_tool_available("mediainfo"):
         missing.append("mediainfo")
     return missing
+
+
+def _is_tool_available(name: str) -> bool:
+    """
+    Check if tool is available on PATH or common Homebrew prefixes.
+    """
+    if shutil.which(name):
+        return True
+    common_paths = (
+        f"/opt/homebrew/bin/{name}",
+        f"/usr/local/bin/{name}",
+    )
+    return any(os.access(path, os.X_OK) for path in common_paths)
