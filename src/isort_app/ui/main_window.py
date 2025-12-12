@@ -41,11 +41,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core.organizer import check_disk_space, MIN_DISK_SPACE_MB
-from core.worker import OrganizeWorker
-from utils.checkpoint import CheckpointManager
-from utils.error_log import ErrorLogger
-from utils.manifest import ManifestUndoer, ManifestInfo, UndoResult
+from isort_app.core.organizer import check_disk_space, MIN_DISK_SPACE_MB
+from isort_app.core.worker import OrganizeWorker
+from isort_app.utils.checkpoint import CheckpointManager
+from isort_app.utils.error_log import ErrorLogger
+from isort_app.utils.manifest import ManifestUndoer, ManifestInfo, UndoResult
 from .log_viewer import LogViewer
 from .stats_widget import StatsWidget
 from .stats_detail_dialog import StatsDetailDialog

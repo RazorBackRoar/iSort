@@ -17,9 +17,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional, Tuple, Union
 
-from core.hasher import HASH_ERROR, SmartHasher
-from core.metadata import Destination
-from core.router import DestinationRouter
+from isort_app.core.hasher import HASH_ERROR, SmartHasher
+from isort_app.core.metadata import Destination
+from isort_app.core.router import DestinationRouter
 
 
 class StopRequested(Exception):

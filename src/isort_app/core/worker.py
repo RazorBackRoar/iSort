@@ -23,17 +23,17 @@ from pathlib import Path
 
 from PySide6.QtCore import QThread, Signal
 
-from core.duplicates import DuplicateDetector
-from core.inventory import InventoryGenerator
-from core.organizer import (
+from isort_app.core.duplicates import DuplicateDetector
+from isort_app.core.inventory import InventoryGenerator
+from isort_app.core.organizer import (
     FileOrganizer,
     OrganizationStats,
     StopRequested,
     format_file_size,
 )
-from utils.checkpoint import CheckpointManager
-from utils.error_log import ErrorLogger
-from utils.manifest import ManifestManager
+from isort_app.utils.checkpoint import CheckpointManager
+from isort_app.utils.error_log import ErrorLogger
+from isort_app.utils.manifest import ManifestManager
 
 logger = logging.getLogger(__name__)
 

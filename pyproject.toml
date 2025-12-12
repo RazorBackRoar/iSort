@@ -33,10 +33,10 @@ Repository = "https://github.com/RazorBackRoar/isort"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["*"]
+include = ["isort_app*"]
 
 [project.scripts]
-isort = "main:main"
+isort-app = "isort_app.main:main"
 
 [tool.pyright]
 include = ["."]

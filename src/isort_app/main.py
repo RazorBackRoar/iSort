@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 # Ensure src/ is on sys.path for absolute imports when launched via entry point
-SRC_DIR = Path(__file__).resolve().parent
+SRC_DIR = Path(__file__).resolve().parent.parent  # src/ directory
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
@@ -53,7 +53,7 @@ def main() -> int:
 
     # Optional dependency warning for external tools
     try:
-        from core.metadata import check_dependencies
+        from isort_app.core.metadata import check_dependencies
 
         # Ensure Homebrew paths are visible when launched from Finder
         hb_paths = ["/opt/homebrew/bin", "/usr/local/bin"]
@@ -83,9 +83,9 @@ def main() -> int:
         logging.exception("Dependency check failed")
 
     # Initialize resources
-    from ui.resources import ResourceManager
+    from isort_app.ui.resources import ResourceManager
 
-    from ui.main_window import MainWindow
+    from isort_app.ui.main_window import MainWindow
 
     window = MainWindow()
     window.show()

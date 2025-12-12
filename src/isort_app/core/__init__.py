@@ -7,16 +7,16 @@
 # - inventory: File inventory management
 # - worker: Background worker threads
 
-from core.duplicates import (
+from isort_app.core.duplicates import (
     ComparisonResult,
     DuplicateDetector,
     DuplicateGroup,
     DuplicateResult,
     FolderComparator,
 )
-from core.hasher import HASH_ERROR, SmartHasher
-from core.inventory import FileInventoryEntry, InventoryGenerator, InventoryResult
-from core.metadata import (
+from isort_app.core.hasher import HASH_ERROR, SmartHasher
+from isort_app.core.inventory import FileInventoryEntry, InventoryGenerator, InventoryResult
+from isort_app.core.metadata import (
     VIDEO_EXTENSIONS,
     AppleDetector,
     BatchMetadata,
@@ -25,9 +25,9 @@ from core.metadata import (
     MetadataExtractor,
     get_file_extension,
 )
-from core.organizer import FileOrganizer, OrganizationStats
-from core.router import DestinationRouter
-from core.worker import OrganizeWorker
+from isort_app.core.organizer import FileOrganizer, OrganizationStats
+from isort_app.core.router import DestinationRouter
+from isort_app.core.worker import OrganizeWorker
 
 __all__ = [
     # Metadata extraction

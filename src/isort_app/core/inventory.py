@@ -24,9 +24,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
-from core.hasher import HASH_ERROR, SmartHasher
-from core.metadata import MetadataExtractor
-from core.organizer import format_file_size
+from isort_app.core.hasher import HASH_ERROR, SmartHasher
+from isort_app.core.metadata import MetadataExtractor
+from isort_app.core.organizer import format_file_size
 
 logger = logging.getLogger(__name__)
 

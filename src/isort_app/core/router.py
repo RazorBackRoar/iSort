@@ -15,7 +15,7 @@ comprehensive file origin detection.
 import os
 from typing import Tuple
 
-from core.metadata import (
+from isort_app.core.metadata import (
     AppleDetector,
     Destination,
     MetadataExtractor,
