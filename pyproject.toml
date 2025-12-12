@@ -23,9 +23,6 @@ classifiers = [
     "Topic :: System :: Filesystems",
 ]
 requires-python = ">=3.10"
-dependencies = [
-    "PySide6>=6.6.0",
-]
 
 [project.urls]
 Homepage = "https://github.com/RazorBackRoar/isort"
