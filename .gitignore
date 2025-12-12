@@ -17,7 +17,9 @@ ENV/
 .DS_Store
 
 # Distribution/packaging
-build/
+build/*
+!build/scripts/
+!build/dmg-config.json
 dist/
 *.egg-info/
 *.egg
